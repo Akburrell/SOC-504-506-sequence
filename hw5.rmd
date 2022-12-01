@@ -1,0 +1,217 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+## **Homework 5**
+
+Spring 2022, Soc 506
+
+Professor Tyler McCormick 
+
+--------------------------------------------------
+**Note:** Homework should be submitted via Canvas.  Must include both compiled results (pdf preferred) and codes (.Rmd file) for credit.
+
+******
+1. Download and read the [article](https://www.bmj.com/content/337/bmj.a2533) and answer the following questions.
+
+  + Choose one of the main results of the paper.  In 1 sentence report the results and interpretation of a regression model. 
+ 
+ one of the results suggest that if a someone has acne, the odds of their friend having ance increase, However, this is based on their unadjusted results. 
+ 
+  + Write a short (about 1/2 page suggested length) referee report focused specifically on the methods for analysis used in the paper.
+  
+This paper baseline understanding of social network effect can have several resulting outcomes, but these outcomes are based on social ties and social environment. For their skin results they are suggesting that a friend have bad skin increases the odds of the other friend having acne, however, there aren't many ties to ance and social outing. Their model also does no account for the hormonal and biological aspect of a person having ance. The sample is also adolescents. Kids are likely in general to have more acne, so this result is probably due to other exterior factors that the researcher did not account for in their regression. They also add robust standard error to all variablebeing test without properly explain what the purpose is for. The mention that the standard error is too small and that papers or journal would reject it, but they do not provide us any other information of that this. When making the determination to use robust standard error a detailed explanation with plot is essential as the reviewers would, rather than rejecting it because the standard error is too small, reject it because their is no enough proof her for the need of robust standard error. 
+  
+  
+  + Swap referee reports with a classmate.  Write a "response to referees" document in response to your classmate's critique.  In your response you should either (i) defend the analysis in the paper or (ii) describe what analyses or modifications you would make to satisfy the referee's critique.
+
+Imma's referee:
+The article does emphasize that current empirical methods used to estimate causal social network effects might detect implausible network effects, such as 'contagion' with headaches, skin problems, and height between adolescent friends. Because there are so many environmental variables to keep in mind when analyzing these effects, it makes sense that these network effects are minimized after environmental confounding. However, networks do influence health behaviors and other behaviors that may influence what environmental factors people are exposed to and potential mitigation efforts. For example, if friends influence each other to drink a lot of caffeine, they may be more prone to headaches than if their friends did not encourage this behavior. I do not think the influence of networks may be all lost.
+
+My response to her referee:
+
+I slightly agree with Imma. The idea is there but their presentation and research of it is not. They do not provide adequate controls, or information as to why one might get a headache similar to how their friend has a headache or why one might get acne around the same time that their other friend gets acne; however, I think that there are so many problems and questions that are not being addressed that to say these result is simply unfair or inaccurate. I would suggest that in order for the idea of social networks effect to work the way Imma sees it, the author would need to do a bit more informing of how these health effects are connected to social networks and would need to provide significant more data and variables to demonstrate that it is social network, or that social network is even statistically significant. 
+  
+  + This article is a critique of the article from last week.  Write about a half page describing the main critiques and describing whether you agree.
+  
+I am not sure how it is a critique from last weeks but I can see how they both fall under social network effects. I think Happiness is/can be a direct affect on someone else happiness and this is a social network effect because happiness can be spread through social interaction. Of course there are many many things at play, but happiness is expressed on the face, in body language, in communication, in all part of communication signally happiness to another individual. Someone looking at another person having acne is not radiating "acne energy". Acne cannot be produced in a direct social way. The way acne is produced is through other health related problems that are common such as food, age, gender, athlete status, face care routine and so on. Because acne "social network effects" are indirect social networks, the data needs to include a control for the social networks in which it is working within. 
+  
+****** 
+2. This problem focuses example from the UCLA Statistics [website](https://stats.idre.ucla.edu/r/dae/logit-regression/).
+
+> A researcher is interested in how variables, such as GRE (Graduate Record Exam scores), GPA (grade point average) and prestige of the undergraduate institution, effect admission into graduate school. The response variable, admit/don’t admit, is a binary variable.
+
+* The question at hand is how well does academic performance (GRE, GPA, RANK) predict/explain who gets admitted to graduate school.
+
+The data: 
+
+
+```{r,message=FALSE,warning=FALSE, eval=FALSE}
+library(tidyverse)
+#install.packages("aod")
+library(aod)
+library(ggplot2)
+mydata <- read.csv("https://stats.idre.ucla.edu/stat/data/binary.csv")
+knitr::kable(head(mydata))
+``` 
+
++ The code below does out of sample prediction using the `caret` package.  Work with a classmate to annotate this code.  That is, insert comments at each line explaining what the subsequent line does.  Use the manual from the package as well as the terminology from our lecture to infer the steps.
+
+```{r, eval=FALSE}
+#note, change eval=FALSE to true to run this code chunk
+library(caret)
+#you are loading the package that is needed to complete the pred
+mydata2<-mydata
+#you are renaming the dataframe
+mydata2$admit<-factor(mydata2$admit,levels=c("0","1"),labels=c("Not Admitted","Admitted"))
+#here tou are creating a variable from the data frame pulling the variable admit and making factors out of it. here they are creating a categorical variable as o and 1, labeling 0 as not admitted and 1 as admitted
+Train <- createDataPartition(mydata2$admit, p=0.6, list=FALSE)
+#here we are focused on the split. The p=0.6 is indicating that we are spliting the data 60 and 40 percent. List as false mean that we are trying to make the object a matrix rather than a list
+training <-data.frame(mydata2[ Train[,1], ])
+#we are now create a dataframe called training. the data frame is taking what we just did above and producing that 60%
+testing <- data.frame(mydata2[ -Train[,1], ])
+#we are now create a dataframe called training.It is taking the data that we "don't" know and producing that 40%
+mod_fit <- train(admit ~ gre + gpa + rank,data=training, method="glm", family="binomial")
+#Here we are taking the Train object we created and fitting it with the variable regression
+pred <- predict(mod_fit, newdata=testing)
+#we are not taking that the above and predicting the rest of the model by using out "newdata" which is testing. 
+accuracy <- table(pred, testing[,"admit"])
+# we are making a table of the "pred" and using the admit variable of the testing object we created, ie the 40% of what we predicted
+cat('Accuracy:',sum(diag(accuracy))/sum(accuracy),'\n')
+#its the probablitiy of how accurate the prediction is. 
+pred <- predict(mod_fit, newdata=testing)
+#this is a redo of the same code above
+confusionMatrix(data=pred, testing$admit)
+#here we are creating the actual matrix of the testing dataframe using the admit variable. not admitted was very accurate while admitted was not as successful.
+```
++ Run the code and interpret the output.
+
+
+******
+3.  Two colleagues, Colleague A and Colleague B, are interested in learning about the potential long-term impacts of food insecurity in childhood. Their first step is to use regression to understand the association between food insecurity and periods of unemployment.  
+
+Colleague A recruits a sample of children, some of whom receive free or discounted meals at three local elementary schools.  Colleague A then follows these students for 20 years.  The outcome is whether a student files for unemployment benefits during the period of study.
+
+Colleague B recruits a sample of individuals currently receiving state employment benefits and a sample of individuals who are not.  Colleague B then surveys those individuals and asks if they ever received free or reduced meals in elementary school.
+
++ Is Colleague A's approach prospective or retrospective?
+
+Prospective. This is prospective because they are looking into the future, they are tracking them through time to see if they end up needing unemployment benefits. Colleague B is retrospective because they are taking their outcome of unemployment status and trying to identify if there was a connect with childhood insecures such as discounted meals. They are working backwards looking into the past.
+
++ Comment on your colleague's choices about measurement of the desired predictor and outcome variables.  Can you think of alternative approaches?
+
+Colleague B has a better sense of measurement by conducting it through retrospective.I think something that they could have altered are the variable that they collect.They collected the same variables as colleague A when they had the chance to find more and deeper information. They have a chance to find these and other variable to put into the model that may bring to light no kind of commonality between those unemployed or those that are unemployed and had the reduced or free lunch program. I also think that by doing this research retrospective it saves a lot more time and money, there is absolutely no reason to follow an individual who had childhood food insecurity to adulthood to see if they need unemployment. I think the only reason it may be necessary is if they indicated how soon they might have needed it. This could also go for colleague B, they could have asked how soon they needed it and seen it there was a difference those who had and did not have childhood food insecurity to when they first began needing unemployment. 
+
++ The data are in the files ``foodempA.csv`` and ``foodempB.csv`` with the file marked A representing the data from Colleague A and B from Colleague B. 
+```{r}
+library(readr)
+#foodempA <- read_csv("foodempA.csv")
+View(foodempA)
+#foodempB <- read_csv("foodempB.csv")
+View(foodempB)
+# No matter how many times I change my directory, it won't change the source file directory which is why I put a hashtag on lines 90 and 92
+```
+
+  + ``unemp`` is the unemployment indicator, ``finsec`` is the food insecurity indicator.  There are also region (5 levels), parent education (4 levels), gender (3 levels), and race (2 levels).  The data files are design matrices, meaning that the categorical variables have already been converted to indicators and appropriate categories dropped.
+```{r}
+library(GGally)
+library(ggthemes)
+ggpairs(foodempA[, c("finsec", "unemp")], lower = list(continuous = wrap("smooth", alpha = 0.5, size = 0.2))) +theme_tufte()
+
+#these are categorical variable, which is why their correlation graphs are L-shaped and no linearly shaped
+```
+  
+  
+  + Open the data and run a logistic regression where the outcome is whether a person filed for unemployment benefits and the predictor is food insecurity.  You can also include other covariates as you see fit.  Run one regression with `foodempA.csv` and one with ``foodempB.csv``.
+```{r}
+ModelA<- glm(unemp~1 + finsec, family= binomial(link='logit'), data = foodempA)
+summary(ModelA)
+ModelB<- glm(unemp~1 + finsec, family= binomial(link='logit'), data = foodempB)
+summary(ModelB)
+```
+  
+    + Compare the coefficient for ``finsec`` between the prospective and retrospective designs.
+    
+The coefficients that R spits out are in the form of log-odds. This cannot be interpreted much at face value other than ranking. We can see that there is a difference in the intercepts and the coefficient itself. Model A we see that both the intercept and the variable are statistically significant. We also see compared to model B that the intercept is significantly smaller, however both are negative integers. The coefficients are relatively the same in log odds form so I imagine in odds ratio or probability they will also be very close. The odds ratio for Model A finsec variable is 3.84 while Model B finsec odds are 3.77. They both have at least a 3x stronger affect in the employment variable, however, Model A has a slightly stronger affect ranging closer to 4 than Model B. Overall it seems as those prospective produced a better result. This model had stronger effect on the dependent variable making both of them statistically significant. 
+
+  + Based on the previous question, would you conclude that food insecurity in childhood impacts the likelihood of having at least one period of unemployment in adulthood?
+
+I think this variable is very specific and my model and the data they collected do not account for everything that could happen from childhood to adulthood that might have contributed to unemployment status. Although their regression suggest that finsec is statistically significant, I am not convince that food insecurity as a child results in unemployment. There is just so much at play that they do not collect for in their data sampling.
+
+**informed to skip this section**
+
+  + Now, fit the same regression as you did for the previous question using a probit link.
+      + Compare the coefficient for ``finsec`` between the prospective and retrospective designs.
+      + Construct and interpret a marginal effects plot for the ``finsec`` variable.
+  + Summarize the exercise you've just completed.  Your summary should include (i) the difference between prospective retrospective designs (and why you might prefer one over the other) (ii) a description of your empirical findings between logistic and probit regression and (iii) and an explanation of why you see these results.
+  + Swap summaries with a classmate and provide feedback.
+
+****** 
+4. For this problem, let's think a bit more about how we interpret the odds-ratio.  
+  + Scenario A. Say that an intervention reduces the probability of recidivism from .2 in the no-intervention group to .1 in the intervention group.  
+    + Compute the odds ratio.
+ 
+  The odds ratio went from 1 in 4 to 1 in 9
+ 
+    + Compute the reduction in relative risk (i.e. likelihood of recidivism under the        intervention compared to no intervention).
+  The relative risk is(probability of exposed/probability of not exposed) (.1/.2)= 0.5 making relative risk reduction (1-RR) = (1-0.5) = 0.5 as well. 
+
+    
+  + Scenario B. Say that an intervention reduces the probability of recidivism from .002 in the no-intervention group to .001 in the intervention group.
+    + Compute the odds ratio.
+  
+  The odds radio for the no-intervention is 1 in 499 and the intervention group is 1 in 999.  
+  
+    + Compute the reduction in relative risk
+    
+  The relative risk is (.001/.002)= 0.5 making the relative risk reduction (1-0.5)= 0.5. 
+    
+  + Based **only** on the odds ratio or relative risk, would you approve funding for the intervention in Scenario A? What about Scenario B? 
+
+No, I would not approve funding for it. 1 in 4 and 1 in 499 to 1 in 9 or 1 in 999 are good differences, I think a single intervention should at least be 3 times less likely. I think in the long run with these numbers it would be helpful, but I would reject it and expect a better plan be create that has significant reduction that I cannot refuse. 
+
+****** 
+5. **Note** You can do this problem as part of either HW 5 or HW 6 depending on your comfort with multinomial regression. Use the following code to load data from the GSS.  Let's look at spending on national parks by political affiliation.  More info on the `natpark` variable is [here](https://gssdataexplorer.norc.org/variables/195/vshow).
+```{r, eval=FALSE}
+#note, change eval=FALSE to true to run this code chunk
+library(tidyverse)
+library(gssr)
+data(gss_panel10_long)
+data(gss_doc)
+
+## Questions
+knitr::kable(gss_doc[gss_doc$id=="natpark","text"])
+
+## Pull Data
+natpark<-gss_panel10_long %>% 
+  mutate(natpark = plyr::mapvalues(as_factor(natpark),from=c('IAP','DK','NA'),to=rep(NA,3)))%>%
+  dplyr::select(natpark) %>% 
+  na.omit()
+
+## Print
+knitr::kable(table(natpark))
+
+## Pull clean data and eliminate levels IAP, DK, NA, Refused
+natpark<-gss_panel10_long %>% 
+  mutate(natpark = plyr::mapvalues(as_factor(natpark),from=c('IAP','DK','NA'),to=rep(NA,3)))%>%
+          mutate(sex= plyr::mapvalues(as_factor(sex),from=c("IAP"),to=rep(NA,1))) %>% #Demographics
+          mutate(race= plyr::mapvalues(as_factor(race),from=c("IAP"),to=rep(NA,1))) %>% 
+          mutate(income= plyr::mapvalues(as_factor(income),from=c("IAP","REFUSED","DK","NA"),to=rep(NA,4))) %>% 
+          mutate(region= plyr::mapvalues(as_factor(region),from=c("IAP"),to=rep(NA,1))) %>% 
+          mutate(age = as.numeric(age)) %>%
+          mutate(partyid= plyr::mapvalues(as_factor(partyid),from=c("IAP","DK","NA"),to=rep(NA,3))) %>%  #Politics
+          dplyr::select(natpark,sex,race,income,region,age,partyid)%>%
+          na.omit() ## drop all NAs
+
+## Print
+knitr::kable(head(natpark))
+```
++ Run a multinomial regression where the output is the `natpark` variable and the input is the `partyid` variable. 
++ Interpret the coefficients in the regression above.
+  
+
+
+  
+
+

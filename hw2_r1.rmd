@@ -1,0 +1,408 @@
+---
+output: html_document
+---
+## **Homework 2**
+
+Spring 2022, Soc 506
+
+Professor Tyler McCormick 
+
+--------------------------------------------------
+**Note:** Homework should be submitted via Canvas.  Must include both compiled results (pdf preferred) and codes (.Rmd file) for credit.
+
+
+1. Read [Using Graphs Instead of Tables in Political Science](http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=1429544&fileId=S1537592707072209).  Now, check out the [code repository](https://scholar.princeton.edu/sites/default/files/jkastellec/files/code_all_graphs.zip).  
+    + Spend some time looking at the code and replicating a few of the figures, getting used to R as you do.  Include a couple figures you replicated in your submission.  Note that the figures use pdf() at the beginning of code for the figures and dev.off() at the end.  These two commands together save graphs directly from R to your working directory.  To have the graph appear in the R console instead simply comment out these two lines.
+```{r}
+#Here I will be doing the Stevens graph 
+
+install.packages("xfun")
+
+#Table 2: single regression table (p.611)
+
+#Create vectors for coefficients, standard errors and variable names 
+    #we place coefficient as last element in each vector rather than 1st
+    #since it is least important predictor, and thus we place it at the bottom of the graph
+
+coef.vec <- c( 1.31, .93, 1.46, .07, .96, .2, .22, -.21, -.32, -.27,.23, 
+    0, -.03, .13, .15, .31, -.10, .41)
+se.vec <- c( .33, .32, .32, .37, .37, .13, .12, .12, .12, .07, .07, .01, .21,
+    .14, .29, .25, .27, .93)
+var.names <- c("Argentina", "Chile", "Colombia", "Mexico", "Venezuela", #for longer names, we split into 2 lines using "\n" function
+    "Retrospective egocentric\neconomic perceptions", "Prospective egocentric\neconomic perceptions",
+    "Retrospective sociotropic\neconomic perceptions", "Prospective sociotropic\neconomic perceptions",
+    "Ideological Distance\nfrom president", "Ideology", "Age", "Female", "Education",
+    "Academic sector", "Business sector", "Government sector", "Constant")
+    
+y.axis <- c(length(coef.vec):1)#create indicator for y.axis, descending so that R orders vars from top to bottom on y-axis
+
+par(mar=c(2, 9, 2, 1))#set margins for plot, leaving lots of room on left-margin (2nd number in margin command) for variable names
+plot(coef.vec, y.axis, type = "p", axes = F, xlab = "", ylab = "", pch = 19, cex = .6,#plot coefficients as points, turning off axes and labels. 
+    xlim = c(-2.5,2.5), xaxs = "i", main = "") #set limits of x-axis so that they include mins and maxs of 
+        #coefficients + .95% confidence intervals and plot is symmetric; use "internal axes", and leave plot title empty
+#the 3 lines below create horiztonal lines for 95% confidence intervals, and vertical ticks for 90% intervals
+segments(coef.vec-qnorm(.975)*se.vec, y.axis, coef.vec+qnorm(.975)*se.vec, y.axis, lwd =  1.5)#coef +/-1.96*se = 95% interval, lwd adjusts line thickness
+segments(coef.vec-qnorm(.95)*se.vec, y.axis -.1, coef.vec-qnorm(.95)*se.vec, y.axis +.1, lwd = 1.1)#coef +/-1.64*se = 90% interval
+segments(coef.vec+qnorm(.95)*se.vec, y.axis -.1, coef.vec+qnorm(.95)*se.vec, y.axis +.1, lwd = 1.1)
+axis(1, at = seq(-2.5,2.5,by=.5), labels =  seq(-2.5,2.5,by=.5), tick = T,#draw x-axis and labels with tick marks
+    cex.axis = .8, mgp = c(2,.5,0))#reduce label size, moves labels closer to tick marks
+axis(3, at = seq(-2.5,2.5,by=.5), labels =  seq(-2.5,2.5,by=.5), tick = T, las  = 1,#same as x-axis, but on top axis so 
+    line =0, cex.axis = .8, mgp = c(2,.7,0))                                            #it's easier to lookup coefs at top of graph
+axis(2, at = y.axis, label = var.names, las = 1, tick = T, 
+    cex.axis = .8) #draw y-axis with tick marks, make labels perpendicular to axis and closer to axis
+abline(v=0, lty = 2) # draw dotted line through 0
+box(bty = "o") #place box around plot
+text(1.2, 5, expression(R^{2} == .15), adj = 0, cex = .7) #add text for R-squared
+text(1.2, 4, expression(paste("Adjusted ", R^{2} == .12, "")), adj = 0, cex = .7)#add text for Adjusted-R-squared
+text(1.2, 3, "n = 500", adj = 0, cex = .7)#add text for sample size
+segments(1.1, 2.7, 1.1,5.3)#use 3 segment commands to draw box around text; connect to  right-side of box 
+segments(1.1, 2.7, 5,2.7)
+segments(1.1, 5.3, 5.2,5.3)
+
+
+
+
+#Here I am doing the Pekkanen graph
+
+#Table 1 from Pekkanen (2006: 2 regressions in a single graph -- offset estimates slightly across variables to distinguish models
+
+#Create Vectors for coefs and standard errors for each model, and variable names
+    #note that we  exclude "margin squared since it doesn't appear in either model
+    #note: multiplying "Vote share margin" by 10 to place on same scale
+
+    #we place coefficient as last element in each vector rather than 1st
+    #since it is least important predictor, and thus we place it at the bottom of the graph
+
+coef.vec.1<- c(0.18, -0.19,-0.39,-0.09, NA, 0.04,-0.86, 0.39,-3.76, -1.61,
+    -0.34, -1.17, -1.15,-1.52, -1.66, -1.34,-2.89,-1.88,-1.08, 0.20)
+se.vec.1 <-  c(0.22, 0.22, 0.18,.29, NA, 0.08,0.26,0.29,0.36,.19,0.19, 0.22,
+    0.22,0.25,0.28,0.32,0.48, 0.43,0.41, 0.20)
+coef.vec.2 <-  c(0.27,-0.19, NA, NA, 0.5, 0.04,-0.98,-.36,-3.66, -1.59,
+     -0.45, -1.24, -1.04, -1.83, -1.82, -1.21, -2.77, -1.34, -0.94, 0.13)
+se.vec.2 <- c(0.22,0.24, NA, NA, 0.4, 0.09 , .31 , .30 , .37 , .21 , .21 , .24 , .24,
+     .29 , .32 , .33 , .49 , .46 , .49 , .26)
+var.names <- c("Zombie" , "SMD Only", "PR Only", "Costa Rican in PR", 
+    "Vote share margin", "Urban-Rural Index","No factional\nmembership",
+    "Legal professional", "1st Term", "2nd Term", "4th Term",
+    "5th Term","6th Term","7th Term","8th Term","9th Term","10th Term",
+    "11th Term","12th Term", "Constant")
+
+y.axis <- length(var.names):1#create indicator for y.axis, descending so that R orders vars from top to bottom on y-axis
+adjust <- .2 #create object that we will use to adjust points and lines up and down to distinguish between models
+    
+#pdf("pekkanen_fig.pdf", height = 8, width = 7) #open pdf device
+layout(matrix(c(2,1),1,2), #in order to add variable categories and braces to left side of plot, 
+    widths = c(2, 5))#we use layout command, create a small second panel on left side.
+                #using c(2,1) in matrix command tells R to create right panel 1st
+#layout.show(2) #can use this command to check results of layout command (but it must be commented out when creating PDF).
+
+par(mar=c(2,5,2,1))#set margins for regression plot
+plot(coef.vec.1, y.axis+adjust, type = "p", axes = F, xlab = "", ylab = "", pch = 19, cex = .8, #plot model 1 coefs using black points (pch = 19, default = black), adding the "adjust amount" to the y.axis indicator to move points up
+    xlim = c(min((coef.vec.1-qnorm(.975)*se.vec.1 -.1), (coef.vec.2-qnorm(.975)*se.vec.2 -.1), na.rm = T), #set xlims at mins and maximums (from both models) of confidence intervals, plus .1 to leave room at ends of plots
+    max((coef.vec.1+qnorm(.975)*se.vec.1 -.1), (coef.vec.2+qnorm(.975)*se.vec.2 -.1), na.rm = T)),  #use na.rm=T since vectors have missing values
+    ylim = c(min(y.axis), max(y.axis)), main = "")
+axis(1,pretty(coef.vec.1, 3))#add x-axis and labels; "pretty" creates a sequence of  equally spaced nice values that cover the range of the values in 'x'-- in this case, integers
+axis(2, at = y.axis, label = var.names, las = 1, tick = T)#add y-axis and labels; las = 1 makes labels perpendicular to y-axis
+axis(3,pretty(coef.vec.1, 3))#same as x-axis, but on top axis 
+abline(h = y.axis, lty = 2, lwd = .5, col = "light grey")#draw light dotted line at each variable for dotplot effect
+box()#draw box around plot
+segments(coef.vec.1-qnorm(.975)*se.vec.1, y.axis+adjust, coef.vec.1+qnorm(.975)*se.vec.1, y.axis+adjust, lwd =  1.3)#draw lines connecting 95% confidence intervals
+segments(coef.vec.1-qnorm(.95)*se.vec.1, y.axis+adjust -.035, coef.vec.1-qnorm(.95)*se.vec.1, y.axis+adjust +.035, lwd = 1.1)#draw vertical tick marks at 90% 
+segments(coef.vec.1+qnorm(.95)*se.vec.1, y.axis+adjust -.035, coef.vec.1+qnorm(.95)*se.vec.1, y.axis+adjust +.035, lwd = 1.1)   #confidence intervals
+abline(v=0, lty = 2, lwd = 1.5) # draw dotted line through 0 for reference line for null significance hypothesis testing
+
+#add 2nd model
+    #because we are using white points and do want the lines to go "through" points rather than over them
+        #we draw lines first and the overlay points
+segments(coef.vec.2-qnorm(.975)*se.vec.2, y.axis-adjust, coef.vec.2+qnorm(.975)*se.vec.2, y.axis-adjust, lwd =  1.3)#draw lines connecting 95% confidence intervals
+segments(coef.vec.2-qnorm(.95)*se.vec.2, y.axis-adjust -.035, coef.vec.2-qnorm(.95)*se.vec.2, y.axis-adjust +.035, lwd = 1.1)#draw vertical tick marks at 90% 
+segments(coef.vec.2+qnorm(.95)*se.vec.2, y.axis-adjust -.035, coef.vec.2+qnorm(.95)*se.vec.2, y.axis-adjust +.035, lwd = 1.1)  #confidence intervals
+points(coef.vec.2, y.axis-adjust, pch = 21, cex = .8, bg = "white" ) #add point estimates for 2nd model; pch = 21 uses for overlay points, and "white" for white color
+
+############################################################################
+
+#Create Variable Categories and Braces to go in 2nd plot
+
+par(mar=c(2,2,2,0)) #set margins--- bottom (1st number) and top (3rd number) must be the same as in 1st plot
+plot(seq(0,1,length=length(var.names)), y.axis, type = "n", axes = F,  xlab = "", ylab = "")#call empty plot using type="n"
+    #use a sequence of length 20 so that x and y have same length
+
+left.side <- .55#use this to manipulate how far segments are from y-axis
+    #note:  getting braces and text in proper place requires much trial and error
+segments(left.side,20.2,left.side,16.7) #add brackets around MP Type vars
+segments(left.side,20.2,left.side+.15,20.2) #1 segment at a time
+segments(left.side,16.7,left.side+.15,16.7)
+text(.4, 18.5, "MP Type", srt = 90, font = 3)#Add text; "srt" rotates to 90 degrees, font = 3 == italics
+
+#don't add "Electoral Strength" since it's only 1 variable
+
+segments(left.side,15.6,left.side,12.3) #add brackets around "Misc Controls"
+segments(left.side,15.6,left.side+.15,15.6) #one segment at a time
+segments(left.side,12.3,left.side+.15,12.3)
+text(.3, 14, "Misc\nControls", srt = 90, font = 3)#Add text; "srt" rotates to 90 degrees, font = 3 == italics
+
+segments(left.side,12.15,left.side,1.8) #add brackets around "Seniority"
+segments(left.side,12.15,left.side+.15,12.15)   #one segment at a time
+segments(left.side,1.8,left.side+.15,1.8)
+text(.4, 7, "Seniority", srt = 90, font = 3)#Add text; "srt" rotates to 90 degrees, font = 3 == italics
+
+    
+
+
+
+
+
+#Here I am doing Kaplan graph
+
+
+
+
+#TABLE 2 from Kaplan (2006)
+#begin by create vectors for each column in table
+var.names <- c("Issue\nConvergence\n(982)", "Competitiveness\n(CQ Ranking)\n(65)", 
+    "Total Spending/\nCapita \n(65)", "Difference Spending/\nCapita\n(65)",
+     "State VotingAge\nPop. (millions-ln) \n(65)", 
+    "Percent\nNegative Ads\n(65)", "2000 Year\n(65)", "2002 Year\n(65)",
+    "Consensual\nIssue\n(43)", "Issue\nOwned\n(43)", "Issue\nSalience\n(43)") 
+mean.vec <- c(24.85, 1.54, 3.47, 1.12, 1.2, 21.38, .38, .32, .28, .49, 2.86)
+sd.vec <- c(34.73, 1.2, 2.71, 1.32, .85, 16.84, .49, .47, .45, .51, 6.38)
+min.vec <- c(0, 0, .28, .03, -.65, 0, 0, 0, 0,0, 0)
+max.vec <- c(99.98, 3, 13.39, 9.26, 3.13, 54.96, 1, 1, 1, 1, 35.63)
+
+#Divide into groups:
+    #Binary
+    #millions (+competitiveness)
+    #percents (+issue salience)
+
+#use points for mean, thick lines for +- 1 sd, thin lines for min-max
+layout(rbind(c(1,2), c(3,3)),widths=c(3,3.1,2.6), respect = F) #since we are using unequal panel
+    #sizes, we use layout command.  We create 2 panels on top and 1 bottom. We then manually
+    #adjust widths so that each panel is approximately equal in width, after labeling is 
+    #taken into account.
+    
+#layout.show(3) #can use this command to check results of layout command (but it must be commented out when creating PDF).
+
+#Within each group: keep only vars from that group.  Then reorder.
+#1st graph -- Binary vars
+keep <- 7:10 #pull out only binary vars, which happen to be the 7th-10th vars in our vectors
+#create vectors for each; could also use mean.vec[7:10] etc.
+mean.vec.binary <-  mean.vec[keep] 
+sd.vec.binary<- sd.vec[keep]
+min.vec.binary <- min.vec[keep]
+max.vec.binary <- max.vec[keep]
+var.names.binary<-var.names[keep]
+
+#order vectors by mean values, in descending order
+mean.vec.binary.order <- sort(mean.vec.binary, decreasing = TRUE) #first sort by means
+sd.vec.binary.order <- sd.vec.binary[order(mean.vec.binary, decreasing = TRUE)] #then sort other vectors by sorted mean variable
+min.vec.binary.order <- min.vec.binary[order(mean.vec.binary, decreasing = TRUE)]
+max.vec.binary.order <- max.vec.binary[order(mean.vec.binary, decreasing = TRUE)]
+var.names.binary.order <- var.names.binary[order(mean.vec.binary, decreasing = TRUE)]
+
+y.axis.binary <- c(length(mean.vec.binary):1)# descending so that R orders vars from top to bottom on y-axis
+par(mar=c(3,7,3,1)) #adjust margins for  plot
+plot(mean.vec.binary.order, y.axis.binary, type = "p", pch = 19, xlab="", ylab ="", #plot circular points; leave axis labels blank; we will fil in using axis command
+    axes = F, xlim = c(min(min.vec.binary.order), max(max.vec.binary.order)), #turn off axes so we can use fine control; set min/max of x-label according to min and maximums of var
+    ylim = c(min(y.axis.binary - .1), max(y.axis.binary + .1)), # increase y-axis min/max by .1 so there no points and lines don't run into top and bottom of panels
+     main = "Binary Variables", xaxs="r") #add title; xaxs="i" uses internal axes, meaning axes are drawn right at xlim values 
+box() #draw box around panel
+axis(1, at = seq(0,1,by=.25), labels =  seq(0,1,by=.25), tick = T, #draw x-axis and labels, tick marks and labels every .25,
+     cex.axis = .8, mgp = c(2,.5,0))#shrink axis-label size to .8, use mgp to place labels closer to tick marks
+axis(2, at = y.axis.binary, label = var.names.binary.order, las = 1, tick = T,#draw y-axis and labels, las = 1 makes y-labels perpendicular to y-axis instead of parallel
+    cex.axis =1, mgp = c(2,3,0), hadj=.5) # hadj =.5 uses center-alignment for y-label; need to adjust
+        #2nd command in "mgp" to account for centering
+
+#2nd graph -- Percents
+keep <- c(1,6,11) #pull out percent variables
+mean.vec.percents <-  mean.vec[keep]
+sd.vec.percents<- sd.vec[keep]
+min.vec.percents <- min.vec[keep]
+max.vec.percents <- max.vec[keep]
+var.names.percents<-var.names[keep]
+
+mean.vec.percents.order <- sort(mean.vec.percents, decreasing = TRUE)#order by means, in descending order
+sd.vec.percents.order <- sd.vec.percents[order(mean.vec.percents, decreasing = TRUE)] #then sort other vectors by sorted mean variable
+min.vec.percents.order <- min.vec.percents[order(mean.vec.percents, decreasing = TRUE)]
+max.vec.percents.order <- max.vec.percents[order(mean.vec.percents, decreasing = TRUE)]
+var.names.percents.order <- var.names.percents[order(mean.vec.percents, decreasing = TRUE)]
+
+y.axis.percents <- c(length(mean.vec.percents):1)# descending so that R orders vars from top to bottom on y-axis
+par(mar=c(3,8,3,1)) #adjust margins for plot
+plot(mean.vec.percents.order, y.axis.percents, type = "p", pch = 19, xlab="", ylab ="", #create plot with points
+    axes = F, xlim = c(-12, 100),#turn off axes, manually set up x-axis limit based on inspection of the plot
+    ylim = c(min(y.axis.percents - .1), max(y.axis.percents + .1)),# increase y-axis min/max by .1 so there no points and lines don't run into top and bottom of panels
+     main = "Percentage Variables", xaxs="i")#add title; xaxs="i" uses internal axes, meaning axes are drawn right at xlim values 
+box()#draw box around panel
+segments((mean.vec.percents.order - sd.vec.percents.order), y.axis.percents, (mean.vec.percents.order + sd.vec.percents.order), y.axis.percents)#add lines connecting +/- 1 st.dev
+segments(min.vec.percents.order, y.axis.percents, max.vec.percents.order, y.axis.percents, lty = 2)#add dotted lines (lty=2) connecting min to max
+axis(1, at = seq(0,100,by=25), labels =  c(0,25,50,75,"100%"), tick = T, #draw x-axis and labels, tick marks and labels every 25%,
+    cex.axis = .8, mgp = c(2,.5,0)) #shrink axis-label size to .8, use mgp to place labels closer to tick marks
+axis(2, at = y.axis.percents, label = var.names.percents.order, las = 1, tick = T,  #draw y-axis and labels, las = 1 makes y-labels perpendicular to y-axis instead of parallel
+    cex.axis =1, mgp = c(2,3.2,0), hadj=.5) # hadj =.5 uses center-alignment for y-label; need to adjust
+        #2nd command in "mgp" to account for centering
+    
+#3rd graph --millions
+keep <- c(2:5) #pull out millions variables
+mean.vec.millions <-  mean.vec[keep]
+sd.vec.millions<- sd.vec[keep]
+min.vec.millions <- min.vec[keep]
+max.vec.millions <- max.vec[keep]
+var.names.millions<-var.names[keep]
+
+mean.vec.millions.order <- sort(mean.vec.millions, decreasing = TRUE) #order by means, in descending order
+sd.vec.millions.order <- sd.vec.millions[order(mean.vec.millions, decreasing = TRUE)] #then sort other vectors by sorted mean variable
+min.vec.millions.order <- min.vec.millions[order(mean.vec.millions, decreasing = TRUE)]
+max.vec.millions.order <- max.vec.millions[order(mean.vec.millions, decreasing = TRUE)]
+var.names.millions.order <- var.names.millions[order(mean.vec.millions, decreasing = TRUE)]
+
+y.axis.millions <- c(length(mean.vec.millions):1)# descending so that R orders vars from top to bottom on y-axis
+par(mar=c(3,18,3,12)) #adjust margins for plot
+plot(mean.vec.millions.order, y.axis.millions, type = "p", pch = 19, xlab="", ylab ="", #plot points
+    axes = F, xlim = c(-1, 14),#turn off axes, manually set up x-axis limit based on inspection of the plot
+    ylim = c(min(y.axis.millions - .1), max(y.axis.millions + .1)),# increase y-axis min/max by .1 so there no points and lines don't run into top and bottom of panels
+     main = "Variables Measured in Millions", xaxs="i")#add title; xaxs="i" uses internal axes, meaning axes are drawn right at xlim values 
+box()#draw box around panel
+segments((mean.vec.millions.order - sd.vec.millions.order), y.axis.millions, (mean.vec.millions.order + sd.vec.millions.order), y.axis.millions)#line connecting +/- 1 st.dev
+segments(min.vec.millions.order, y.axis.millions, max.vec.millions.order, y.axis.millions, lty = 2)#line connecting +/- 1 st.dev
+axis(1, at = seq(0,14,by=2), labels =  seq(0,14,by=2), tick = T, las  = 1,#draw x-axis and labels, tick marks and labels every 2nd value,
+    line =0, cex.axis = .8, mgp = c(2,.5,0)) #shrink axis-label size to .8, use mgp to place labels closer to tick marks
+axis(2, at = y.axis.millions, label = var.names.millions, las = 1, tick = T, #draw y-axis and labels, las = 1 makes y-labels perpendicular to y-axis instead of parallel
+    cex.axis =1, mgp = c(2,5,0), hadj=.5) # hadj =.5 uses center-alignment for y-label; need to adjust
+        #2nd command in "mgp" to account for centering
+    
+
+```
+  
+  
+    + Explain to a classmate the main message of the graphs you've created.
+Figure 1:Stevens
+
+This graph is ploting the errors interval of each variable. On the left side of the figure there are about 17 different variables and one constant. They are ploting the 95% confidence interval and were the regression P-value lies for each variable. For the most part it looks like none of the variable barely fit in the interval, they are almost all relatively close to the center. 
+
+Figure 2:Pekkanen
+
+Similar to the other graph it is plotting error bar for 95% confidence based on it P-value. This model is slightly different because it has two models that are bing plot and compared against each other for analysis. This graph also is grouping some of their variables together which is what the brackets are for on the left side. This Graph is good to use if you are plotting multiple graphs, need to group variable and the multiple graphs need to be compared for analysis. 
+
+Figure 3:Kaplan
+
+This graph is completely different from the previous graphs. Although it could have been made similar to Pekkanen graph, it created 3 different graphs for the 3 different groupings it has rather than puting it all on one figure with brackets. It also would have been a little bit more complicated to understand if it were on one graph because these variable have different units of measure: binary(dummy variables= 0 or 1), percentage, per million.
+
+
+
+
+2. Read the article "How Robust Standard Errors Expose Methodological
+Problems They Do Not Fix, and What to Do About It" by King and Roberts (2015, Political Analysis).
+    + Prepare lecture slides for about 15 minutes of material summarizing the main points of the paper.  If applicable, include both slides and source files (e.g. .tex, ppt files).  You can turn in your slides separately from your main HW Rmd.  If you'd like, you can write a 1-2 page description instead of slides.  
+    + Repeat the procedure described in footnote 1 of the paper and look through some of the most frequently cited papers.  Pick a paper and write about a paragraph describing whether the King-Roberts critique is relevant to that paper.
+    + Replicate Figures 2, 3, and 4 in the paper and write a short description of what you've found.  Hint: replication codes are available on the Harvard Dataverse, but you'll need to write the data simulation functions yourself.
+```{r}
+install.packages("alr3")
+library(remotes)
+remotes::install_github("cran/alr3")
+library(alr3)
+data(highway)
+#knitr::kable(highway)
+
+```
+    
+    
+    
+    + As an **alternative** to the previous question, replicate one of the data examples in the paper using the replication codes from the Harvard Dataverse.  I recommend doing the Neumayer_ISQ_2003.R example.  Please note that doing the boostrap can take some time.
+
+3. Let's do an example of a complete regression analysis. We will take our problem/data from the SW *Applied Linear Regression* text book. We will therefore need the `alr3` R package.
+
+If you have not installed it yet, run the following code *once* to install the package.
+```{r, eval=FALSE}
+#this was done above to install and run the packages
+```
+
+From the help file `?highway`
+
+>The data comes from a unpublished master's paper by Carl Hoffstedt. They relate the automobile accident rate, in accidents per million vehicle miles to several potential terms. The data include 39 sections of large highways in the state of Minnesota in 1973. The goal of this analysis was to understand the impact of design variables, Acpts, Slim, Sig, and Shld that are under the control of the highway department, on accidents.
+
+
+```{r}
+library(alr3)
+data(highway)
+#knitr::kable(highway)
+
+```
+
+
+Given the dataset `highway` we have the following variables:
+
+* ADT - average daily traffic count in thousands
+* Trks - truck volume as a percent of the total volume
+* Lane - total number of lanes of traffic
+* Acpt - number of access points per mile
+* Sigs - number of signalized interchanges per mile
+* Itg - number of freeway-type interchanges per mile
+* Slim - speed limit in 1973
+* Len - length of the highway segment in miles
+* Lwid - lane width, in feet
+* Shld - width in feet of outer shoulder on the roadway
+* Hwy - An indicator of the type of roadway or the source of funding for the road; 0 if MC, 1 if FAI, 2 if PA, 3 if MA
+* Rate - 1973 accident rate per million vehicle miles
+
+    + Describe the data using plots and 1-2 sentences, including the data collection.
+
+```{r}
+#exploratory data analysis
+summary(highway)
+corrplot(cor(highway),
+         method = "number",       
+         order = "original",         
+         addrect = 2,              
+         rect.col = 3,             
+         rect.lwd = 3)  
+install.packages("corrplot")
+library(corrplot)
+
+corrplot.mixed(cor(highway),
+               lower = "number", 
+               upper = "circle",
+               tl.col = "black")
+install.packages("PerformanceAnalytics")
+library(PerformanceAnalytics)
+chart.Correlation(highway, histogram = TRUE, method = "pearson")
+
+Overal<- tidy(highway, conf.int = TRUE)
+plot_overal <- highway %>% filter(term != "(Intercept)")
+ggplot(plot_overal) +
+geom_point(aes(x = estimate, y = term)) +
+geom_linerange(aes(xmin = conf.low, xmax = conf.high, y = term))
+
+```
+All three of the plots that I created are correlation between each of the variables. ADP and Lane are strongly correlated between each other, so that might be a variable worth exploring. However it appears that the strongest correlation with rate (our y or output variable) are Adpt, and slim of the variable the author was interested in. I also performed a similar 
+    
+    ```
+    + Formulate and justify a statistical model.
+    ```{r}
+    #model specification
+cars<- glm(Rate~1 + Acpt + Sigs + Trks + Slim, family= gaussian(link='identity'), data = highway)
+summary(cars)
+    ```
+
+I chose to do these 4 different variable because this is what the author was interested in when they were collecting and looking at the data. Here it is looking at the the number of access points, speed limit, signalized interchanges, and truck volume. All four of these varibales had the strongest correlation with negative and possive with our output or y variable. Bases on the result of the regression, there are 2 variables that are within the 99% confidence which are rate (y variable) and Acpt which is the access point dependent variable. Slim or the speed limit is wihtin the 95% confidence and Trks or truck volume falls in the 90% confidence interval and sigs or signalized interchanges is not statsticall significant at all.   
+    
+    + Fit the statistical model and write a 1-2 sentence interpretation.
+    ```{r}
+    #model fitting
+install.packages("tidyverse")
+library(ggplot2)
+ggplot(cars, aes(x= Acpt + Sigs + Trks + Slim, y=Rate)) + geom_point()
+
+    ```
+    + Perform model diagnostics and report your findings.
+    ```{r}
+    #diagnostics and critique
+plot(cars, which = c(1,2))
+
+    ```
+    + Write a short summary of what you've found as though you were writing it for a journal.
+    
+    
+
+
+
+

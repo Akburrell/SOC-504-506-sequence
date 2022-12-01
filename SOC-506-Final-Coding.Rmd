@@ -1,0 +1,181 @@
+---
+title: "SOC 506 Final Coding"
+author: "Amber Burrell"
+date: "5/23/2022"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+  word_document: default
+---
+
+## **SOC 506 Final Coding**
+## Amber Burrell
+## 23 May 2022
+
+```{r setup, include=FALSE}
+#install.packages('tidycensus')
+library(tidycensus)
+library(tidyverse)
+#install.packages("haven")
+library(haven)
+library(MASS)
+library(readr)
+library(corrplot)
+#install.packages("coefplot")
+install.packages("ggplot2")
+library(ggplot2)
+
+```
+
+
+
+This is my 2016 data. below I will be cleaning and manipulating the data to get it ready for a regression.
+```{r}
+orginial<- read_sav("anes_timeseries_2016.sav")
+election2016<- orginial[,c("V161188","V161496", "V167534", "V161310a", "V161310b", "V168307", "V168305")]
+election2016<- na.omit(election2016)
+election2016$new_black <- ifelse(election2016$V161310b == 1, 1, ifelse(election2016$V161310a == 1, 0, NA))
+Ngun<- election2016[,"V161496"]
+GunAcc<- election2016[,"V161188"]
+neighborhood<- election2016[,"V167534"]
+sex <- election2016[,"V168307"]
+election2016$GunAcc <- election2016$V161188
+election2016$neighborhood <- election2016$V167534
+election2016$sex <- election2016$V168307
+election2016$Ngun <- election2016$V161496
+```
+
+cleaning the data by creating NA for unwanted data and removing it from the dataframe.
+```{r}
+election2016$GunAcc[election2016$V161188 == -9] <- NA
+election2016$GunAcc[election2016$V161188 == -8] <- NA
+election2016$Ngun[election2016$V161496 == -9] <- NA
+election2016$Ngun[election2016$V161496 == -5] <- NA
+election2016$neighborhood[election2016$V167534 == -8] <- NA
+election2016$neighborhood[election2016$V167534 == -1] <- NA
+election2016$sex[election2016$V168307 == -6] <- NA
+election2016$sex[election2016$V168307 == -1] <- NA
+clean_2016<- na.omit(election2016)
+summary(clean_2016)
+```
+
+Many of the variables are categorical or are factor variables so below I am making the variable as factors in R
+```{r}
+neighborhood_factor <- factor(clean_2016$neighborhood, levels= c(1,2,3,4), labels= c("Farm","Rural","Suburban","Urban"))
+sex_factor <- factor(clean_2016$sex, levels= c(1,2), labels= c("Male","Female"))
+GunAcc_factor <- factor(clean_2016$GunAcc, levels= c(1,2,3,4,5), labels= c(" Extremely important", "Very important", "Somewhat important", "Not too important", "Not important at all"))
+
+```
+
+The regression and analyzing the regression
+```{r}
+Guns<- polr(GunAcc_factor~1 + Ngun + new_black + neighborhood_factor, data = clean_2016)
+summary(Guns)
+exp(coef(Guns))
+summary(Guns)$coefficients[,1]
+summary(Guns)$standard.error[,2]
+z<- summary(Guns)$coefficients[,1]/summary(Guns)$coefficients[,2]
+z
+pvalue<- (1-pnorm(abs(z),0,1)) *2
+pvalue
+```
+
+Now here we are making the graphs! 
+```{r}
+boxplot(GunAcc_factor~Ngun, data = clean_2016 )
+boxplot(GunAcc_factor~new_black, data = clean_2016 )
+library(sjPlot)
+library(coefplot)
+plot_model(Guns)
+coefplot(Guns)
+
+```
+
+
+
+************************************************************
+
+
+
+Now we are switching to 2020. similar to 2016, I will be first cleaning and manipulating the data to get ready for the regression.
+```{r}
+original2020 <- read_csv("anes_timeseries_2020_csv_20220210.csv")
+election2020 <- original2020[,c("V202355", "V203412", "V203413","V201628", "V202338" )]
+election2020$new_black20 <- ifelse(election2020$V203412 == 2, 1, ifelse(election2020$V203412 == 1, 0, NA))
+GunA <- election2020[,"V202338"]
+Ngun<- election2020[,"V201628"]
+neighborhood<- election2020[,"V202355"]
+race <- election2020[,"V203412"]
+sex <- election2020[,"V203413"]
+election2020$GunA <- election2020$V202338
+election2020$neighborhood <- election2020$V202355
+election2020$race <- election2020$V203412
+election2020$sex <- election2020$V203413
+election2020$Ngun <- election2020$V201628
+```
+
+Now I will be labeling unwanted data point as NA to then get them cleared to remove all NA from the dataframe to create a clean data frame. 
+
+```{r}
+election2020$GunA[election2020$V202338 == -9] <- NA
+election2020$GunA[election2020$V202338 == -7] <- NA
+election2020$GunA[election2020$V202338 == -6] <- NA
+election2020$GunA[election2020$V202338 == -5] <- NA
+election2020$Ngun[election2020$V201628 == -9] <- NA
+election2020$Ngun[election2020$V201628 == -5] <- NA
+election2020$neighborhood[election2020$V202355 == -9] <- NA
+election2020$neighborhood[election2020$V202355 == -8] <- NA
+election2020$neighborhood[election2020$V202355 == -7] <- NA
+election2020$neighborhood[election2020$V202355 == -6] <- NA
+election2020$race[election2020$V203412 == -2] <- NA
+election2020$race[election2020$V203412 == -1] <- NA
+election2020$race[election2020$V203412 == 3] <- NA
+election2020$sex[election2020$V203413 == -2] <- NA
+election2020$sex[election2020$V203413 == -1] <- NA
+clean20<- na.omit(election2020)
+```
+
+Now I am creating the factors for the variable for both dependent and independent variable. 
+```{r}
+neighborhood_f20 <- factor(clean20$neighborhood, levels= c(1,2,3,4), labels= c("Rural","Small Town","Suburb","City"))
+sex_f20 <- factor(clean20$sex, levels= c(1,2), labels= c("Male","Female"))
+GunA_factor <- factor(clean20$GunA, levels= c(1,2,3,4,5), labels= c(" Extremely important", "Very important", "Somewhat important", "Not too important", "Not important at all"))
+
+```
+
+Regression time! 
+
+```{r}
+Guns20<- polr(GunA_factor~1 + Ngun + new_black20 + neighborhood_f20, data = clean20)
+summary(Guns20)
+exp(coef(Guns20))
+
+z<- summary(Guns20)$coefficients[,1]/summary(Guns20)$coefficients[,2]
+z
+pvalue<- (1-pnorm(abs(z),0,1)) *2
+pvalue
+
+```
+
+Lets make the graphs for the data.
+
+```{r}
+boxplot(GunA_factor~Ngun, data = clean20 )
+boxplot(GunA_factor~new_black20, data = clean20)
+library(sjPlot)
+plot_model(Guns20)
+library(coefplot)
+coefplot(Guns20)
+
+```
+
+Comparison between 2020 and 2016 odds ratio
+
+```{r}
+exp(coef(Guns20))
+exp(coef(Guns))
+(exp(coef(Guns20))) - (exp(coef(Guns)))
+
+
+```
